@@ -45,24 +45,30 @@ namespace WarGameApi
 
         }
 
-        public PlayerStats PlayerWins(string player)
+        public List<PlayerStats> PlayerWins()
         {
-            PlayerStats playerStats = new PlayerStats();
+            List<PlayerStats> playerStats = new List<PlayerStats>();
             int cantWins;
 
-            string qrySelect = @"SELECT Count(GameId) Cant
+            string qrySelect = @"SELECT Winner, Count(GameId) Cant
                                 FROM GameResult
-                                WHERE Winner = '"+ player + @"'
-                                GROUP BY Winner";
+                                GROUP BY Winner
+                                ORDER BY Cant DESC, Winner ASC";
 
             SQLiteManager sqlman = new SQLiteManager(conSqlite);
 
-            var cant = sqlman.ExecuteScalar(qrySelect);
+            var data = sqlman.GetDataTable(qrySelect);
+            foreach(System.Data.DataRow row in data.Rows)
+            {
+                if (!int.TryParse(row["Cant"].ToString(), out cantWins))
+                    cantWins = 0;
 
-            playerStats.Player = player;
-
-            if (int.TryParse(cant, out cantWins))
-                playerStats.Wins = cantWins;
+                playerStats.Add(new PlayerStats()
+                {
+                    Player = row["Winner"].ToString()
+                    ,Wins = cantWins
+                });
+            }
 
             return playerStats;
         }

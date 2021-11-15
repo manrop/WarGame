@@ -26,14 +26,12 @@ namespace WarGameApi.Controllers
 
         [Route("api/playerstats")]
         [HttpGet]
-        public IActionResult Get([FromQuery] string player)
+        public IActionResult Get()
         {
-            if (string.IsNullOrWhiteSpace(player))
-                return BadRequest("You must provide the name of Player.");
 
             Game game = new Game();
 
-            PlayerStats res = game.PlayerWins(player);
+            List<PlayerStats> res = game.PlayerWins();
 
             return Ok(res);
         }
