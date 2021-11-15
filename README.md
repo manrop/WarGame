@@ -23,8 +23,9 @@ GET  method with the following form:
 http://localhost:41080/api/startgame?p1={player1}&p2={player2}
 ```
 Where
->{player1} = Name of player 1
->{player2] = Name of player 2
+
+- {player1} = Name of player 1
+- {player2} = Name of player 2
 
 Example:
 ``` console
