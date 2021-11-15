@@ -10,6 +10,7 @@ namespace WarGameApi
     public class Game
     {
         private string player1, player2;
+        private string conSqlite = "Data Source = wargame.db";
 
         public GameResult StartGame(string p1, string p2)
         {
@@ -24,27 +25,13 @@ namespace WarGameApi
             if (string.IsNullOrWhiteSpace(p2))
                 throw new ArgumentException("Player2 name Invalid.");
 
-            List<Card> p1Cards, p2Cards;
+            IniDB();
 
             //Get initial Deck of Cards
             List<Card> cards = InitialCards();
 
-            //Shuffle card deck
-            ShuffleCards(cards);
-
-            //Deal Cards to each Player
-            p1Cards = new List<Card>();
-            p2Cards = new List<Card>();
-            while (cards.Count > 0)
-            {
-                p1Cards.Add(cards.First());
-                cards.Remove(cards.First());
-                p2Cards.Add(cards.First());
-                cards.Remove(cards.First());
-            }
-
             //Play The Game
-            gameResult = PlayGame(p1Cards, p2Cards);
+            gameResult = PlayGame(cards);
 
             Console.WriteLine($"The winner is {gameResult.Winner}, after {gameResult.Rounds} rounds.");
 
@@ -58,12 +45,50 @@ namespace WarGameApi
 
         }
 
-        private GameResult PlayGame(List<Card> p1Cards, List<Card> p2Cards)
+        public PlayerStats PlayerWins(string player)
+        {
+            PlayerStats playerStats = new PlayerStats();
+            int cantWins;
+
+            string qrySelect = @"SELECT Count(GameId) Cant
+                                FROM GameResult
+                                WHERE Winner = '"+ player + @"'
+                                GROUP BY Winner";
+
+            SQLiteManager sqlman = new SQLiteManager(conSqlite);
+
+            var cant = sqlman.ExecuteScalar(qrySelect);
+
+            playerStats.Player = player;
+
+            if (int.TryParse(cant, out cantWins))
+                playerStats.Wins = cantWins;
+
+            return playerStats;
+        }
+
+        private GameResult PlayGame(List<Card> cards)
         {
             GameResult result = new GameResult();
 
+            List<Card> p1Cards = new List<Card>();
+            List<Card> p2Cards = new List<Card>();
+
             List<Card> p1Pile = new List<Card>();
             List<Card> p2Pile = new List<Card>();
+
+            //Shuffle card deck
+            ShuffleCards(cards);
+
+            //Deal Cards to each Player
+            while (cards.Count > 0)
+            {
+                p1Cards.Add(cards.First());
+                cards.Remove(cards.First());
+
+                p2Cards.Add(cards.First());
+                cards.Remove(cards.First());
+            }
 
             string movDesc;
             int roundNum = 0;
@@ -193,12 +218,10 @@ namespace WarGameApi
             int gameId = 0;
             Dictionary<string, string> datos = new Dictionary<string, string>();
 
-            string conec = "Data Source = wargame.db";
-
             datos.Add("Winner", game.Winner);
             datos.Add("Rounds", game.Rounds.ToString());
 
-            SQLiteManager sqlman = new SQLiteManager(conec);
+            SQLiteManager sqlman = new SQLiteManager(conSqlite);
             if(sqlman.Insert("GameResult", datos))
             {
                 var res = sqlman.ExecuteScalar("SELECT GameId FROM GameResult ORDER BY GameId desc LIMIT 1");
@@ -206,6 +229,28 @@ namespace WarGameApi
             }
 
             return gameId;
+        }
+        
+
+        private void IniDB()
+        {
+            SQLiteManager sqlman = new SQLiteManager(conSqlite);
+
+            string qryCreate = @"CREATE TABLE IF NOT EXISTS ""GameResult"" (
+                                ""GameId""    INTEGER,
+	                            ""Winner""    TEXT,
+	                            ""Rounds""    INTEGER,
+	                            PRIMARY KEY(""GameId"" AUTOINCREMENT))";
+
+            sqlman.ExecuteNonQuery(qryCreate);
+
+            qryCreate = @"CREATE TABLE IF NOT EXISTS ""GameMovement"" (
+                                ""GameId""    INTEGER,
+	                            ""Round"" INTEGER,
+	                            ""Description""   TEXT,
+	                            PRIMARY KEY(""GameId"",""Round"")
+                            )";
+            sqlman.ExecuteNonQuery(qryCreate);
         }
 
         private void ListCards(List<Card> cards)

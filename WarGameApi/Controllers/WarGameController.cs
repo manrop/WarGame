@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace WarGameApi.Controllers
 {
-    [Route("api/startgame")]
     [ApiController]
     public class WarGameController : ControllerBase
     {
+        [Route("api/startgame")]
         [HttpGet]
         public IActionResult Get([FromQuery] string p1, [FromQuery] string p2)
         {
@@ -20,6 +20,20 @@ namespace WarGameApi.Controllers
             Game game = new Game();
 
             GameResult res = game.StartGame(p1, p2);
+
+            return Ok(res);
+        }
+
+        [Route("api/playerstats")]
+        [HttpGet]
+        public IActionResult Get([FromQuery] string player)
+        {
+            if (string.IsNullOrWhiteSpace(player))
+                return BadRequest("You must provide the name of Player.");
+
+            Game game = new Game();
+
+            PlayerStats res = game.PlayerWins(player);
 
             return Ok(res);
         }
