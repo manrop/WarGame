@@ -7,11 +7,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.115.5" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="SqliteManager">
-      <HintPath>..\..\SQLiteManager\SQLiteManager\bin\Release\SqliteManager.dll</HintPath>
+      <HintPath>SqliteManager.dll</HintPath>
     </Reference>
   </ItemGroup>
 

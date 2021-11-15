@@ -15,7 +15,7 @@ namespace WarGameApi.Controllers
         public IActionResult Get([FromQuery] string p1, [FromQuery] string p2)
         {
             if (string.IsNullOrWhiteSpace(p1) || string.IsNullOrWhiteSpace(p2))
-                return BadRequest();
+                return BadRequest("You must provide name of Players.");
 
             Game game = new Game();
 

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Data.SqlClient;
 using System.Diagnostics;
+using SqliteManager;
 
 namespace WarGameApi
 {
@@ -47,6 +47,12 @@ namespace WarGameApi
             gameResult = PlayGame(p1Cards, p2Cards);
 
             Console.WriteLine($"The winner is {gameResult.Winner}, after {gameResult.Rounds} rounds.");
+
+            int GameId = SaveGameResult(gameResult);
+            if (GameId > 0)
+                gameResult.GameId = GameId;
+            else
+                throw new Exception("Error ocurred saving the Game.");
 
             return gameResult;
 
@@ -182,7 +188,27 @@ namespace WarGameApi
             }
         }
 
-        private void WriteCards(List<Card> cards)
+        private int SaveGameResult(GameResult game)
+        {
+            int gameId = 0;
+            Dictionary<string, string> datos = new Dictionary<string, string>();
+
+            string conec = "Data Source = wargame.db";
+
+            datos.Add("Winner", game.Winner);
+            datos.Add("Rounds", game.Rounds.ToString());
+
+            SQLiteManager sqlman = new SQLiteManager(conec);
+            if(sqlman.Insert("GameResult", datos))
+            {
+                var res = sqlman.ExecuteScalar("SELECT GameId FROM GameResult ORDER BY GameId desc LIMIT 1");
+                gameId = int.Parse(res);
+            }
+
+            return gameId;
+        }
+
+        private void ListCards(List<Card> cards)
         {
             foreach(Card c in cards)
             {
