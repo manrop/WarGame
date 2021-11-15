@@ -69,5 +69,10 @@ namespace WarGameApi
             }
         }
 
+        public override string ToString()
+        {
+            return rank + " of " + suit;
+        }
+
     }
 }

@@ -12,13 +12,16 @@ namespace WarGameApi.Controllers
     public class WarGameController : ControllerBase
     {
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get([FromQuery] string p1, [FromQuery] string p2)
         {
+            if (string.IsNullOrWhiteSpace(p1) || string.IsNullOrWhiteSpace(p2))
+                return BadRequest();
+
             Game game = new Game();
 
-            game.StartGame("playe1", "player2");
+            GameResult res = game.StartGame(p1, p2);
 
-            return Ok("OK");
+            return Ok(res);
         }
 
     }
